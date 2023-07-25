@@ -1,0 +1,31 @@
+{
+  "name": "nodejs-user-auth",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ViniciusEderman/nodejs-user-auth.git"
+  },
+  "keywords": [],
+  "author": "Vinicius Ederman",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ViniciusEderman/nodejs-user-auth/issues"
+  },
+  "homepage": "https://github.com/ViniciusEderman/nodejs-user-auth#readme",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^16.3.1",
+    "env": "0.0.2",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.1",
+    "mysql2": "^3.5.2",
+    "nodemon": "^3.0.1",
+    "sequelize": "^6.32.1"
+  }
+}
