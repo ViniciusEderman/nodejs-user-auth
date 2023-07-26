@@ -45,3 +45,15 @@ Testing the API: You can use tools like Postman or curl to test the API endpoint
 
 # Dependencies
     The project relies on several libraries, including bcryptjs, dotenv, express, jsonwebtoken, mysql2, and sequelize. For a complete list of dependencies and their versions, please write the >package.json<
+```json
+"dependencies": {
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^16.3.1",
+    "env": "0.0.2",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.1",
+    "mysql2": "^3.5.2",
+    "nodemon": "^3.0.1",
+    "sequelize": "^6.32.1"
+  }
+```
