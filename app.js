@@ -9,11 +9,34 @@ require('dotenv').config();
 app.use(express.json());
 const jwtSecret = process.env.JWT_SECRET;
 
-app.get('/', isLogin, async (req, res) => {
+app.get('/home', isLogin, async (req, res) => {
     return res.json({
         mensagem: 'Test home pag',
         idUser: req.userId,
     });
+});
+
+app.get('/list/users', isLogin, async (req, res) => {
+
+    try {
+      const allUsers = await User.findAll({
+        attributes: ['id', 'name', 'email'], // return filds id, name and email at the db
+      });
+
+      if(allUsers.length === 0) {
+        return res.status(404).json({
+            message: "dont exist users in db", 
+        });
+      }
+
+      res.json(allUsers);
+      
+    } catch (error) {
+      console.error('Erro ao listar usuários:', err);
+      res.status(500).json({ 
+        error: 'Erro ao listar usuários',
+      });
+    }
 });
 
 app.post('/register', async (req, res) => {
