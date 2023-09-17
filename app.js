@@ -19,65 +19,102 @@ app.get('/home', isLogin, async (req, res) => {
 app.get('/list/users', isLogin, async (req, res) => {
 
     try {
-      const allUsers = await User.findAll({
-        attributes: ['id', 'name', 'email'], // return filds id, name and email at the db
-      });
-
-      if(allUsers.length === 0) {
-        return res.status(404).json({
-            message: "dont exist users in db", 
+        const allUsers = await User.findAll({
+            attributes: ['id', 'name', 'email'], // return filds id, name and email at the db
         });
-      }
 
-      res.json(allUsers);
-      
+        if (allUsers.length === 0) {
+            return res.status(404).json({
+                message: "dont exist users in db",
+            });
+        }
+
+        res.json(allUsers);
+
     } catch (error) {
-      console.error('Erro ao listar usuários:', err);
-      res.status(500).json({ 
-        error: 'Erro ao listar usuários',
-      });
+        console.error('Erro ao listar usuários:', err);
+        res.status(500).json({
+            error: 'Erro ao listar usuários',
+        });
     }
 });
 
 app.post('/register', async (req, res) => {
-    let data = req.body;
-    data.password = await bcrypt.hash(data.password, 8);
+    try {
+        let data = req.body; // data body request
 
-    await User.create(data).then(() => {
+        const userInDb = await User.findOne({
+            where: {
+                email: data.email,
+            }
+        });
+
+        if (userInDb) {
+            return res.status(400).json({
+                message: "email alredy registred"
+            })
+        }
+
+        data.password = await bcrypt.hash(data.password, 8);
+
+        await User.create(data);
+
         return res.json({
-            mensagem: "user registred",
+            message: "user registred",
         });
-    }).catch((err) => {
-        return res.status(400).json({
-            mensagem: "user not registred",
+
+    } catch (error) {
+        console.log(error);
+
+        return res.status(500).json({
+            message: "error for registre user"
         });
-        console.log(err);
-    });
+    }
 });
 
 app.post('/login', async (req, res) => {
     console.log(req.body);
 
     const user = await User.findOne({
-        fild: ['id', 'name', 'email', 'password'],
+        field: ['id', 'name', 'email', 'password'],
         where: {
             email: req.body.email
         }
     });
 
-    if(user === null) {
+    if (!user) {
         return res.status(401).json({
-            error: "user not find", 
+            error: "user not find",
         });
     };
 
-    if(!(await bcrypt.compare(req.body.password, user.password))){
+    if (user.loginAttempts >= 3 && user.lastLoginAttempt) {
+        const currentTime = new Date();
+        const lastAttemptTime = new Date(user.lastLoginAttempt);
+        const timeSinceLastAttempt = (currentTime - lastAttemptTime) / (1000 * 60);
+
+        if (timeSinceLastAttempt < 15) { // block for 15 minutes
+            return res.status(401).json({
+                error: "Account temporarily locked. Please try again later.",
+            });
+        }
+    }
+
+    if (!(await bcrypt.compare(req.body.password, user.password))) {
+        user.loginAttempts++;
+        user.lastLoginAttempt = new Date();
+        await user.save();
+
         return res.status(401).json({
-            error: "invalid password", 
+            error: "invalid password",
         });
     }
 
-    let token = jwt.sign({id: user.id}, jwtSecret, {
+    user.loginAttempts = 0;
+    user.lastLoginAttempt = null;
+    await user.save();
+
+    let token = jwt.sign({ id: user.id }, jwtSecret, {
         expiresIn: '7d'
     });
 
@@ -87,7 +124,7 @@ app.post('/login', async (req, res) => {
     });
 });
 
-app.put('/update/user/:id', async (req, res) =>{
+app.put('/update/user/:id', async (req, res) => {
     try {
         const id = req.params.id;
         const userUpdate = req.body;
@@ -104,7 +141,7 @@ app.put('/update/user/:id', async (req, res) =>{
         if (!userUpdate.name || !userUpdate.email || !userUpdate.password) {
             return res.status(400).json({ error: 'name, email, and password are required fields' });
         }
-        
+
         const updatedUser = await User.update(
             {
                 name: userUpdate.name,
@@ -121,15 +158,15 @@ app.put('/update/user/:id', async (req, res) =>{
         }
 
         return res.status(200).json({ message: 'User updated successfully' });
-        
-    }catch (error) {
+
+    } catch (error) {
         console.log('error: ' + error);
         return res.status(500).json({ error: 'Server Error' });
     }
 });
 
 app.delete('/:id', async (req, res) => {
-    try{
+    try {
         const id = req.params.id;
 
         const deleteUserDb = await User.destroy({
@@ -142,9 +179,9 @@ app.delete('/:id', async (req, res) => {
 
         return res.status(200).json({
             mensagem: 'user deleted',
-         });
+        });
 
-    }catch(error){
+    } catch (error) {
         console.log('error: ' + error);
     }
 });

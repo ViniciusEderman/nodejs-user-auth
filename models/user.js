@@ -20,7 +20,14 @@ const User = db.define('users', {
     password: {
         type: Sequelize.STRING,
         allowNull: false,
-    }
+    },
+    loginAttempts: {
+        type: Sequelize.INTEGER,
+        defaultValue: 0,
+    },
+    lastLoginAttempt: {
+        type: Sequelize.DATE,
+    },
 });
 
 const verifyTable = async () => {
