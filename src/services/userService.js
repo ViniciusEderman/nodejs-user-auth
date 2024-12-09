@@ -10,12 +10,16 @@ const getAllUsers = async () => {
   return User.findAll({ attributes: ["id", "name", "email"] });
 };
 
+const getUserByID = async (id) => {
+  return User.findOne({ where: { id }});
+}
+
 const createUser = async (data) => {
   if (!data.email || !data.password || !data.name) {
     throw new Error("Error registering user");
   }
   
-  const userExists = await User.findOne({ where: { email: data.email } });
+  const userExists = await User.findOne({ where: { email: data.email }});
   if (userExists) throw new Error("Email already registered");
 
   data.password = await bcrypt.hash(data.password, 8);
@@ -24,7 +28,7 @@ const createUser = async (data) => {
 };
 
 const loginUser = async (data) => {
-  const user = await User.findOne({ where: { email: data.email } });
+  const user = await User.findOne({ where: { email: data.email }});
   if (!user || !(await bcrypt.compare(data.password, user.password))) {
     throw new Error("Invalid email or password");
   }
@@ -33,7 +37,7 @@ const loginUser = async (data) => {
 };
 
 const updateUser = async (id, data) => {
-  const user = await User.findOne({ where: { id } });
+  const user = await User.findOne({ where: { id }});
   if (!user) throw new Error("User not found");
 
   data.password = await bcrypt.hash(data.password, 8);
@@ -42,9 +46,9 @@ const updateUser = async (id, data) => {
 };
 
 const deleteUser = async (id) => {
-  const deleted = await User.destroy({ where: { id } });
+  const deleted = await User.destroy({ where: { id }});
   if (!deleted) throw new Error("User not found");
   return { message: "User deleted" };
 };
 
-module.exports = { getAllUsers, createUser, loginUser, updateUser, deleteUser };
+module.exports = { getAllUsers, createUser, loginUser, updateUser, deleteUser, getUserByID };

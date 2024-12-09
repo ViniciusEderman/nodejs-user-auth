@@ -24,6 +24,25 @@ const listUsers = async (req, res) => {
   }
 };
 
+const listUserByID = async (req, res) => {
+  try{
+    await new Promise((resolve) => setTimeout(resolve, 10000));
+
+    const { id } = req.params;
+    const user = await userService.getUserByID(id);
+
+    if(!user) {
+      return res.status(404).json({message: "user not found"});
+    }
+
+    await res.saveToCache(user);
+    res.status(200).json(user);
+  }
+  catch (error) {
+    res.status(500).json({error: "Error when returning this user"});
+  }
+}
+
 const register = async (req, res) => {
   try {
     const newUser = await userService.createUser(req.body);
@@ -60,4 +79,4 @@ const deleteUser = async (req, res) => {
   }
 };
 
-module.exports = { home, listUsers, register, login, updateUser, deleteUser };
+module.exports = { home, listUsers, register, login, updateUser, deleteUser, listUserByID };

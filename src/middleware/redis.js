@@ -42,4 +42,29 @@ const Cache = async (req, res, next) => {
   }
 };
 
-module.exports = { Cache };
+const CacheUserByID = async (req, res, next) => {
+  const { id } = req.params;
+  const key = `user:${id}`;
+
+  try {
+    const cacheData = await redisClient.get(key);
+
+    if(!cacheData) {
+      res.saveToCache = async (data) => {
+        await redisClient.set(
+          key,
+          JSON.stringify(data), {
+          EX: 3600
+        });
+      }
+      return next();
+    }
+
+    return res.json(JSON.parse(cacheData));
+  } catch (error) {
+    console.log(error);
+    next();
+  }
+}
+
+module.exports = { Cache, CacheUserByID };
